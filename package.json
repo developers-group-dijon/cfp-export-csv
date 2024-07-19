@@ -1,0 +1,9 @@
+{
+  "name": "cfp-export-csv",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "json-2-csv": "^5.5.4"
+  }
+}
