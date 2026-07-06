@@ -13,30 +13,28 @@ if (!fs.existsSync(jsonFile)) {
 const jsonData = fs.readFileSync(jsonFile, { encoding: 'utf8' })
 const rawData = JSON.parse(jsonData);
 
-const categories = new Map(rawData.categories.map(({id, name}) => [id, name]))
-const formats = new Map(rawData.formats.map(({id, name}) => [id, name]))
-const speakers = new Map(rawData.speakers.map((speaker) => [speaker.uid, speaker]))
-
-const formattedData = rawData.talks.map((talk) => {
+const formattedData = rawData.proposals.map((talk) => {
   return {
     title: talk.title,
-    format: formats.get(talk.formats),
-    category: categories.get(talk.categories),
-    language: talk.language,
-    level: talk.level,
-    rating: talk.rating,
-    loves: talk.loves ? "💚" : null,
-    hates: talk.hates ? "❌" : null,
-    speakers: talk.speakers.map((speakerId) => {
-      const speaker = speakers.get(speakerId)
+    format: talk.formats.join(" ; "),
+    category: talk.categories.join(" ; "),
+    languages: talk.languages.join(" ; "),
+    level: talk.level?.toLocaleLowerCase("fr-FR"),
+    rating: `${talk.review.average}`.replace(".", ","),
+    loves: "💚".repeat(talk.review.positives ?? 0),
+    hates: "❌".repeat(talk.review.negatives ?? 0),
+    tags: talk.tags.join(" ; "),
+    speakers: talk.speakers.map((speaker) => {
       const companyStr = speaker.company ? ` (${speaker.company})` : ''
       const localityStr = speaker.address?.locality?.short_name ? ` [${speaker.address?.locality?.short_name}]` : ''
-      return `${speaker.displayName}${companyStr}${localityStr}`
+      return `${speaker.name}${companyStr}${localityStr}`
     }).join(" ; ")
   }
 })
 
 console.log(converter.json2csv(formattedData, {
+  // Délimiter custom pour que le copier/coller se fasse bien dans gsheet
+  delimiter: {field: "§"},
   expandArrayObjects: true,
   emptyFieldValue: ""
 }))
